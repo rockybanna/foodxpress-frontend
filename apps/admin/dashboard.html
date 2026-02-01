@@ -13,7 +13,7 @@
     <p>
       Logged in as: <strong id="adminUser"></strong>
       |
-      <a href="./index.html" id="logoutLink">Logout</a>
+      <a href="#" id="logoutLink">Logout</a>
     </p>
     <hr />
   </header>
@@ -50,23 +50,23 @@
   <script src="../../core/auth.js"></script>
 
   <script>
-    function init() {
+    async function init() {
       const state = AppState.get();
 
-      // Guard: admin only
+      // HARD GUARD (sync)
       if (!state.token || state.role !== "ADMIN") {
         window.location.href = "./index.html";
         return;
       }
 
-      // Optional backend verification (read-only)
-      verifySession().then(res => {
-        if (!res || res.valid === false) {
-          AppState.clear();
-          window.location.href = "./index.html";
-          return;
-        }
-      });
+      try {
+        // READ-ONLY verification
+        await verifySession();
+      } catch (e) {
+        AppState.clear();
+        window.location.href = "./index.html";
+        return;
+      }
 
       document.getElementById("adminUser").textContent = state.userId;
     }
