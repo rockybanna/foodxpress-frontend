@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard — FoodXpress</title>
+  <link rel="stylesheet" href="../../assets/css/base.css" />
+</head>
+<body>
+
+  <header>
+    <h2>FoodXpress — Admin Dashboard</h2>
+    <p>
+      Logged in as: <strong id="adminUser"></strong>
+      |
+      <a href="./index.html" id="logoutLink">Logout</a>
+    </p>
+    <hr />
+  </header>
+
+  <main>
+    <section>
+      <h3>Overview</h3>
+      <p>Summary cards will appear here.</p>
+    </section>
+
+    <section>
+      <h3>Operations</h3>
+      <ul>
+        <li>Orders</li>
+        <li>Payments</li>
+        <li>Settlements</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Management</h3>
+      <ul>
+        <li>Restaurants</li>
+        <li>Delivery Partners</li>
+        <li>Menus</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Core scripts -->
+  <script src="../../config.js"></script>
+  <script src="../../core/state.js"></script>
+  <script src="../../core/api.js"></script>
+  <script src="../../core/auth.js"></script>
+
+  <script>
+    function init() {
+      const state = AppState.get();
+
+      // Guard: admin only
+      if (!state.token || state.role !== "ADMIN") {
+        window.location.href = "./index.html";
+        return;
+      }
+
+      // Optional backend verification (read-only)
+      verifySession().then(res => {
+        if (!res || res.valid === false) {
+          AppState.clear();
+          window.location.href = "./index.html";
+          return;
+        }
+      });
+
+      document.getElementById("adminUser").textContent = state.userId;
+    }
+
+    document.getElementById("logoutLink").addEventListener("click", function (e) {
+      e.preventDefault();
+      AppState.clear();
+      window.location.href = "./index.html";
+    });
+
+    init();
+  </script>
+
+</body>
+</html>
