@@ -5,7 +5,6 @@
 function apiGet(action, params = {}) {
   return new Promise((resolve, reject) => {
     const baseUrl = window.CONFIG && window.CONFIG.BACKEND_URL;
-
     if (!baseUrl) {
       reject(new Error("Backend URL not configured"));
       return;
