@@ -1,0 +1,6 @@
+{
+  "name": "FoodXpress",
+  "short_name": "FoodXpress",
+  "start_url": "/",
+  "display": "standalone"
+}
