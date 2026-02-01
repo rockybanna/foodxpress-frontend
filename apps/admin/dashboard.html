@@ -26,6 +26,16 @@
       font-size: 22px;
       font-weight: bold;
     }
+    .section-box {
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .muted {
+      color: #777;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -41,7 +51,8 @@
   </header>
 
   <main>
-    <section>
+    <!-- KPIs -->
+    <section class="section-box">
       <h3>Overview</h3>
 
       <div class="kpis">
@@ -62,16 +73,27 @@
       </div>
     </section>
 
-    <section>
-      <h3>Operations</h3>
-      <ul>
-        <li>Orders</li>
-        <li>Payments</li>
-        <li>Settlements</li>
-      </ul>
+    <!-- Orders (Read-only) -->
+    <section class="section-box">
+      <h3>Orders (Read-only)</h3>
+
+      <p class="muted">
+        This view is read-only. Use CSV export for full data.
+      </p>
+
+      <p>
+        <a id="exportOrders" href="#" target="_blank">
+          ⬇ Export Orders (CSV)
+        </a>
+      </p>
+
+      <div class="muted">
+        Table view will be enabled later if required.
+      </div>
     </section>
 
-    <section>
+    <!-- Other sections -->
+    <section class="section-box">
       <h3>Management</h3>
       <ul>
         <li>Restaurants</li>
@@ -108,15 +130,13 @@
       document.getElementById("adminUser").textContent = state.userId;
 
       loadKpis();
+      setupExportLink();
     }
 
     async function loadKpis() {
       try {
-        // READ-ONLY backend call
-        // This matches admin_dashboard.gs
         const res = await apiGet("getAdminDashboard");
 
-        // Defensive reads (backend already tested)
         document.getElementById("kpiOrders").textContent =
           res?.today?.ordersTotal ?? "—";
 
@@ -127,9 +147,17 @@
           res?.today?.payable ?? "—";
 
       } catch (e) {
-        // Fail-safe: do nothing, keep dashes
         console.warn("KPI load failed:", e.message);
       }
+    }
+
+    function setupExportLink() {
+      // Uses existing backend CSV export (already tested earlier)
+      const url =
+        window.CONFIG.BACKEND_URL +
+        "?action=exportOrdersCsv";
+
+      document.getElementById("exportOrders").href = url;
     }
 
     document.getElementById("logoutLink").addEventListener("click", function (e) {
