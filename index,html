@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FoodXpress</title>
+  <link rel="stylesheet" href="./assets/css/base.css" />
 </head>
 <body>
-  <h1>FoodXpress frontend setup</h1>
+
+  <h1>FoodXpress</h1>
+  <p>Select an app:</p>
+
+  <ul>
+    <li><a href="./apps/customer/">Customer App</a></li>
+    <li><a href="./apps/restaurant/">Restaurant App</a></li>
+    <li><a href="./apps/dp/">Delivery Partner App</a></li>
+    <li><a href="./apps/admin/">Admin App</a></li>
+  </ul>
+
 </body>
 </html>
