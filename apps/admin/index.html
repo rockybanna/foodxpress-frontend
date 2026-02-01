@@ -44,8 +44,7 @@
       const password = document.getElementById("password").value;
 
       try {
-        const res = await apiGet("loginUser", {
-          role: "ADMIN",
+        const res = await apiGet("adminLogin", {
           id: adminId,
           password: password
         });
