@@ -55,6 +55,7 @@
     function showLoggedIn(userId) {
       adminUser.textContent = userId;
       authInfo.style.display = "block";
+      output.innerHTML = '<a href="./dashboard.html">Go to Dashboard</a>';
       loginBox.style.display = "none";
       output.textContent = "";
     }
