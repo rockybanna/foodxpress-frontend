@@ -1,40 +1,48 @@
 // ===============================
-// Backend API wrapper (READ-ONLY)
+// Backend API wrapper (JSONP)
 // ===============================
 
-async function apiGet(endpoint, params = {}) {
-  const baseUrl = window.CONFIG.BACKEND_URL;
+function apiGet(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const baseUrl = window.CONFIG.BACKEND_URL;
 
-  if (!baseUrl || baseUrl.includes("PASTE_APPS_SCRIPT_URL")) {
-    throw new Error("Backend URL not configured");
-  }
-
-  const url = new URL(baseUrl);
-  url.searchParams.set("action", endpoint);
-
-  Object.keys(params).forEach(key => {
-    if (params[key] !== undefined && params[key] !== null) {
-      url.searchParams.set(key, params[key]);
+    if (!baseUrl) {
+      reject(new Error("Backend URL not configured"));
+      return;
     }
+
+    const callbackName = "jsonp_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+
+    params.action = action;
+    params.callback = callbackName;
+
+    const query = Object.keys(params)
+      .map(k => encodeURIComponent(k) + "=" + encodeURIComponent(params[k]))
+      .join("&");
+
+    const script = document.createElement("script");
+    script.src = baseUrl + "?" + query;
+
+    window[callbackName] = function (data) {
+      delete window[callbackName];
+      document.body.removeChild(script);
+
+      if (data && data.error) {
+        reject(new Error(data.error));
+      } else {
+        resolve(data);
+      }
+    };
+
+    script.onerror = function () {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      reject(new Error("JSONP request failed"));
+    };
+
+    document.body.appendChild(script);
   });
-
-  const res = await fetch(url.toString(), {
-    method: "GET",
-    cache: "no-store"
-  });
-
-  if (!res.ok) {
-    throw new Error("Network error: " + res.status);
-  }
-
-  const data = await res.json();
-
-  if (data.error) {
-    throw new Error(data.error);
-  }
-
-  return data;
 }
 
-// Expose globally
+// expose globally
 window.apiGet = apiGet;
