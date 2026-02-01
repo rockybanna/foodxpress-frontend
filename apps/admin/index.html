@@ -3,26 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Login — FoodXpress</title>
+  <title>Admin — FoodXpress</title>
   <link rel="stylesheet" href="../../assets/css/base.css" />
 </head>
 <body>
 
-  <h2>Admin Login</h2>
+  <h2>Admin Panel</h2>
 
-  <form id="loginForm">
-    <div>
-      <label>Admin ID</label><br />
-      <input type="text" id="adminId" required />
-    </div>
-    <br />
-    <div>
-      <label>Password</label><br />
-      <input type="password" id="password" required />
-    </div>
-    <br />
-    <button type="submit">Login</button>
-  </form>
+  <div id="authInfo" style="display:none;">
+    <p>
+      Logged in as: <strong id="adminUser"></strong>
+    </p>
+    <button id="logoutBtn">Logout</button>
+    <hr />
+  </div>
+
+  <div id="loginBox" style="display:none;">
+    <h3>Admin Login</h3>
+
+    <form id="loginForm">
+      <div>
+        <label>Admin ID</label><br />
+        <input type="text" id="adminId" required />
+      </div>
+      <br />
+      <div>
+        <label>Password</label><br />
+        <input type="password" id="password" required />
+      </div>
+      <br />
+      <button type="submit">Login</button>
+    </form>
+  </div>
 
   <pre id="output"></pre>
 
@@ -33,9 +45,45 @@
   <script src="../../core/auth.js"></script>
 
   <script>
-    const form = document.getElementById("loginForm");
+    const authInfo = document.getElementById("authInfo");
+    const loginBox = document.getElementById("loginBox");
     const output = document.getElementById("output");
+    const adminUser = document.getElementById("adminUser");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const form = document.getElementById("loginForm");
 
+    function showLoggedIn(userId) {
+      adminUser.textContent = userId;
+      authInfo.style.display = "block";
+      loginBox.style.display = "none";
+      output.textContent = "";
+    }
+
+    function showLoggedOut() {
+      authInfo.style.display = "none";
+      loginBox.style.display = "block";
+    }
+
+    async function init() {
+      const state = AppState.get();
+
+      if (!state.token || state.role !== "ADMIN") {
+        showLoggedOut();
+        return;
+      }
+
+      // Verify session with backend (read-only)
+      const res = await verifySession();
+      if (!res || res.valid === false) {
+        AppState.clear();
+        showLoggedOut();
+        return;
+      }
+
+      showLoggedIn(state.userId);
+    }
+
+    // Login submit
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       output.textContent = "Logging in...";
@@ -59,12 +107,21 @@
           userId: adminId
         });
 
-        output.textContent = "Login successful";
+        showLoggedIn(adminId);
 
       } catch (err) {
         output.textContent = "Error: " + err.message;
       }
     });
+
+    // Logout
+    logoutBtn.addEventListener("click", function () {
+      AppState.clear();
+      showLoggedOut();
+    });
+
+    // Init on load
+    init();
   </script>
 
 </body>
