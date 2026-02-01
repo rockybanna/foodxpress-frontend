@@ -14,6 +14,8 @@
     <p>
       Logged in as: <strong id="adminUser"></strong>
     </p>
+    <a href="./dashboard.html">Go to Dashboard</a>
+    <br /><br />
     <button id="logoutBtn">Logout</button>
     <hr />
   </div>
@@ -55,7 +57,6 @@
     function showLoggedIn(userId) {
       adminUser.textContent = userId;
       authInfo.style.display = "block";
-      output.innerHTML = '<a href="./dashboard.html">Go to Dashboard</a>';
       loginBox.style.display = "none";
       output.textContent = "";
     }
@@ -68,23 +69,15 @@
     async function init() {
       const state = AppState.get();
 
-      if (!state.token || state.role !== "ADMIN") {
+      // IMPORTANT FIX:
+      // Only check local state here, do NOT invalidate session
+      if (state.token && state.role === "ADMIN") {
+        showLoggedIn(state.userId);
+      } else {
         showLoggedOut();
-        return;
       }
-
-      // Verify session with backend (read-only)
-      const res = await verifySession();
-      if (!res || res.valid === false) {
-        AppState.clear();
-        showLoggedOut();
-        return;
-      }
-
-      showLoggedIn(state.userId);
     }
 
-    // Login submit
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       output.textContent = "Logging in...";
@@ -115,13 +108,11 @@
       }
     });
 
-    // Logout
     logoutBtn.addEventListener("click", function () {
       AppState.clear();
       showLoggedOut();
     });
 
-    // Init on load
     init();
   </script>
 
