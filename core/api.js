@@ -1,17 +1,18 @@
 // ===============================
-// Backend API wrapper (JSONP)
+// FOODXPRESS — JSONP API WRAPPER
 // ===============================
 
 function apiGet(action, params = {}) {
   return new Promise((resolve, reject) => {
-    const baseUrl = window.CONFIG.BACKEND_URL;
+    const baseUrl = window.CONFIG && window.CONFIG.BACKEND_URL;
 
     if (!baseUrl) {
       reject(new Error("Backend URL not configured"));
       return;
     }
 
-    const callbackName = "jsonp_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+    const callbackName =
+      "fx_cb_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
 
     params.action = action;
     params.callback = callbackName;
@@ -22,10 +23,11 @@ function apiGet(action, params = {}) {
 
     const script = document.createElement("script");
     script.src = baseUrl + "?" + query;
+    script.async = true;
 
     window[callbackName] = function (data) {
       delete window[callbackName];
-      document.body.removeChild(script);
+      script.remove();
 
       if (data && data.error) {
         reject(new Error(data.error));
@@ -36,7 +38,7 @@ function apiGet(action, params = {}) {
 
     script.onerror = function () {
       delete window[callbackName];
-      document.body.removeChild(script);
+      script.remove();
       reject(new Error("JSONP request failed"));
     };
 
@@ -44,5 +46,4 @@ function apiGet(action, params = {}) {
   });
 }
 
-// expose globally
 window.apiGet = apiGet;
