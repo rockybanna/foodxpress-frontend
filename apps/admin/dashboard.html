@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Dashboard — FoodXpress</title>
   <link rel="stylesheet" href="../../assets/css/base.css" />
+  <style>
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .kpi {
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 6px;
+    }
+    .kpi h4 {
+      margin: 0 0 6px 0;
+      font-size: 14px;
+      color: #555;
+    }
+    .kpi .value {
+      font-size: 22px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
@@ -21,7 +43,23 @@
   <main>
     <section>
       <h3>Overview</h3>
-      <p>Summary cards will appear here.</p>
+
+      <div class="kpis">
+        <div class="kpi">
+          <h4>Orders Today</h4>
+          <div class="value" id="kpiOrders">—</div>
+        </div>
+
+        <div class="kpi">
+          <h4>Payments Pending</h4>
+          <div class="value" id="kpiPaymentsPending">—</div>
+        </div>
+
+        <div class="kpi">
+          <h4>Settlements Due</h4>
+          <div class="value" id="kpiSettlements">—</div>
+        </div>
+      </div>
     </section>
 
     <section>
@@ -53,14 +91,13 @@
     async function init() {
       const state = AppState.get();
 
-      // HARD GUARD (sync)
+      // Guard
       if (!state.token || state.role !== "ADMIN") {
         window.location.href = "./index.html";
         return;
       }
 
       try {
-        // READ-ONLY verification
         await verifySession();
       } catch (e) {
         AppState.clear();
@@ -69,6 +106,30 @@
       }
 
       document.getElementById("adminUser").textContent = state.userId;
+
+      loadKpis();
+    }
+
+    async function loadKpis() {
+      try {
+        // READ-ONLY backend call
+        // This matches admin_dashboard.gs
+        const res = await apiGet("getAdminDashboard");
+
+        // Defensive reads (backend already tested)
+        document.getElementById("kpiOrders").textContent =
+          res?.today?.ordersTotal ?? "—";
+
+        document.getElementById("kpiPaymentsPending").textContent =
+          res?.today?.paymentsSubmitted ?? "—";
+
+        document.getElementById("kpiSettlements").textContent =
+          res?.today?.payable ?? "—";
+
+      } catch (e) {
+        // Fail-safe: do nothing, keep dashes
+        console.warn("KPI load failed:", e.message);
+      }
     }
 
     document.getElementById("logoutLink").addEventListener("click", function (e) {
