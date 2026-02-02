@@ -66,30 +66,17 @@
     </section>
   </main>
 
-  <!-- Core scripts (ALL REQUIRED) -->
+  <!-- Core scripts -->
   <script src="../../config.js"></script>
   <script src="../../core/state.js"></script>
-  <script src="../../core/api.js"></script>
-  <script src="../../core/auth.js"></script>
 
   <script>
-    async function init() {
-      const state = AppState.get();
+    const state = AppState.get();
 
-      // Hard guard
-      if (!state.token || state.role !== "RESTAURANT") {
-        window.location.href = "./index.html";
-        return;
-      }
-
-      try {
-        await verifySession();
-      } catch (e) {
-        AppState.clear();
-        window.location.href = "./index.html";
-        return;
-      }
-
+    // SIMPLE, STABLE GUARD (NO VERIFY YET)
+    if (!state.token || state.role !== "RESTAURANT") {
+      window.location.href = "./index.html";
+    } else {
       document.getElementById("restaurantUser").textContent = state.userId;
     }
 
@@ -98,8 +85,6 @@
       AppState.clear();
       window.location.href = "./index.html";
     });
-
-    init();
   </script>
 
 </body>
