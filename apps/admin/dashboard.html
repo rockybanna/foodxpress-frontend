@@ -77,24 +77,31 @@
       </div>
     </section>
 
-    <!-- Orders (Read-only) -->
+    <!-- Orders -->
     <section class="section-box">
       <h3>Orders (Read-only)</h3>
-      <p class="muted">This view is read-only. Use CSV export for full data.</p>
+      <p class="muted">Use CSV export for full data.</p>
       <p class="links">
         <a id="exportOrders" href="#" target="_blank">⬇ Export Orders (CSV)</a>
       </p>
-      <div class="muted">Table view will be enabled later if required.</div>
     </section>
 
-    <!-- Payments (Read-only) -->
+    <!-- Payments -->
     <section class="section-box">
       <h3>Payments (Read-only)</h3>
-      <p class="muted">This view is read-only. Use CSV export for full data.</p>
+      <p class="muted">Use CSV export for full data.</p>
       <p class="links">
         <a id="exportPayments" href="#" target="_blank">⬇ Export Payments (CSV)</a>
       </p>
-      <div class="muted">Table view will be enabled later if required.</div>
+    </section>
+
+    <!-- Settlements -->
+    <section class="section-box">
+      <h3>Settlements (Read-only)</h3>
+      <p class="muted">Use CSV export for full data.</p>
+      <p class="links">
+        <a id="exportSettlements" href="#" target="_blank">⬇ Export Settlements (CSV)</a>
+      </p>
     </section>
 
     <!-- Management -->
@@ -158,12 +165,16 @@
     function setupExportLinks() {
       const state = AppState.get();
       const base = window.CONFIG.BACKEND_URL;
+      const token = encodeURIComponent(state.token);
 
       document.getElementById("exportOrders").href =
-        base + "?action=exportOrdersCsv&token=" + encodeURIComponent(state.token);
+        base + "?action=exportOrdersCsv&token=" + token;
 
       document.getElementById("exportPayments").href =
-        base + "?action=exportPaymentsCsv&token=" + encodeURIComponent(state.token);
+        base + "?action=exportPaymentsCsv&token=" + token;
+
+      document.getElementById("exportSettlements").href =
+        base + "?action=exportSettlementsCsv&token=" + token;
     }
 
     document.getElementById("logoutLink").addEventListener("click", function (e) {
