@@ -66,16 +66,17 @@
     </section>
   </main>
 
-  <!-- Core scripts -->
+  <!-- Core scripts (ALL REQUIRED) -->
   <script src="../../config.js"></script>
   <script src="../../core/state.js"></script>
+  <script src="../../core/api.js"></script>
   <script src="../../core/auth.js"></script>
 
   <script>
     async function init() {
       const state = AppState.get();
 
-      // Hard guard before rendering
+      // Hard guard
       if (!state.token || state.role !== "RESTAURANT") {
         window.location.href = "./index.html";
         return;
