@@ -92,7 +92,7 @@
       </div>
     </section>
 
-    <!-- Other sections -->
+    <!-- Management -->
     <section class="section-box">
       <h3>Management</h3>
       <ul>
@@ -113,7 +113,6 @@
     async function init() {
       const state = AppState.get();
 
-      // Guard
       if (!state.token || state.role !== "ADMIN") {
         window.location.href = "./index.html";
         return;
@@ -152,10 +151,13 @@
     }
 
     function setupExportLink() {
-      // Uses existing backend CSV export (already tested earlier)
+      const state = AppState.get();
+
+      // IMPORTANT FIX: attach token
       const url =
         window.CONFIG.BACKEND_URL +
-        "?action=exportOrdersCsv";
+        "?action=exportOrdersCsv" +
+        "&token=" + encodeURIComponent(state.token);
 
       document.getElementById("exportOrders").href = url;
     }
