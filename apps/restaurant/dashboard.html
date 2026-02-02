@@ -5,19 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Restaurant Dashboard — FoodXpress</title>
   <link rel="stylesheet" href="../../assets/css/base.css" />
+  <style>
+    header {
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 16px;
+    }
+    nav a {
+      margin-right: 12px;
+    }
+    .section {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .muted {
+      color: #777;
+      font-size: 13px;
+    }
+  </style>
 </head>
 <body>
 
-  <h2>Restaurant Dashboard</h2>
+  <header>
+    <h2>FoodXpress — Restaurant Dashboard</h2>
+    <p>
+      Logged in as: <strong id="restaurantUser"></strong>
+      |
+      <a href="#" id="logoutLink">Logout</a>
+    </p>
+  </header>
 
-  <p>
-    Logged in as:
-    <strong id="restaurantUser"></strong>
-  </p>
+  <nav>
+    <a href="#">Overview</a>
+    <a href="#">Orders</a>
+    <a href="#">Menu</a>
+    <a href="#">Timings</a>
+  </nav>
 
-  <p>This dashboard will be built in the next steps.</p>
+  <main>
+    <section class="section">
+      <h3>Overview</h3>
+      <p class="muted">
+        Restaurant overview metrics will appear here.
+      </p>
+    </section>
 
-  <a href="#" id="logout">Logout</a>
+    <section class="section">
+      <h3>Orders</h3>
+      <p class="muted">
+        Live and past orders will appear here.
+      </p>
+    </section>
+
+    <section class="section">
+      <h3>Menu</h3>
+      <p class="muted">
+        Menu management will be added later.
+      </p>
+    </section>
+  </main>
 
   <!-- Core scripts -->
   <script src="../../config.js"></script>
@@ -25,19 +72,33 @@
   <script src="../../core/auth.js"></script>
 
   <script>
-    const state = AppState.get();
+    async function init() {
+      const state = AppState.get();
 
-    if (!state.token || state.role !== "RESTAURANT") {
-      window.location.href = "./index.html";
-    } else {
+      // Hard guard before rendering
+      if (!state.token || state.role !== "RESTAURANT") {
+        window.location.href = "./index.html";
+        return;
+      }
+
+      try {
+        await verifySession();
+      } catch (e) {
+        AppState.clear();
+        window.location.href = "./index.html";
+        return;
+      }
+
       document.getElementById("restaurantUser").textContent = state.userId;
     }
 
-    document.getElementById("logout").addEventListener("click", function (e) {
+    document.getElementById("logoutLink").addEventListener("click", function (e) {
       e.preventDefault();
       AppState.clear();
       window.location.href = "./index.html";
     });
+
+    init();
   </script>
 
 </body>
