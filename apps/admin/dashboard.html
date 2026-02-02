@@ -36,6 +36,10 @@
       color: #777;
       font-size: 13px;
     }
+    .links a {
+      display: inline-block;
+      margin-right: 12px;
+    }
   </style>
 </head>
 <body>
@@ -76,20 +80,21 @@
     <!-- Orders (Read-only) -->
     <section class="section-box">
       <h3>Orders (Read-only)</h3>
-
-      <p class="muted">
-        This view is read-only. Use CSV export for full data.
+      <p class="muted">This view is read-only. Use CSV export for full data.</p>
+      <p class="links">
+        <a id="exportOrders" href="#" target="_blank">⬇ Export Orders (CSV)</a>
       </p>
+      <div class="muted">Table view will be enabled later if required.</div>
+    </section>
 
-      <p>
-        <a id="exportOrders" href="#" target="_blank">
-          ⬇ Export Orders (CSV)
-        </a>
+    <!-- Payments (Read-only) -->
+    <section class="section-box">
+      <h3>Payments (Read-only)</h3>
+      <p class="muted">This view is read-only. Use CSV export for full data.</p>
+      <p class="links">
+        <a id="exportPayments" href="#" target="_blank">⬇ Export Payments (CSV)</a>
       </p>
-
-      <div class="muted">
-        Table view will be enabled later if required.
-      </div>
+      <div class="muted">Table view will be enabled later if required.</div>
     </section>
 
     <!-- Management -->
@@ -129,7 +134,7 @@
       document.getElementById("adminUser").textContent = state.userId;
 
       loadKpis();
-      setupExportLink();
+      setupExportLinks();
     }
 
     async function loadKpis() {
@@ -150,16 +155,15 @@
       }
     }
 
-    function setupExportLink() {
+    function setupExportLinks() {
       const state = AppState.get();
+      const base = window.CONFIG.BACKEND_URL;
 
-      // IMPORTANT FIX: attach token
-      const url =
-        window.CONFIG.BACKEND_URL +
-        "?action=exportOrdersCsv" +
-        "&token=" + encodeURIComponent(state.token);
+      document.getElementById("exportOrders").href =
+        base + "?action=exportOrdersCsv&token=" + encodeURIComponent(state.token);
 
-      document.getElementById("exportOrders").href = url;
+      document.getElementById("exportPayments").href =
+        base + "?action=exportPaymentsCsv&token=" + encodeURIComponent(state.token);
     }
 
     document.getElementById("logoutLink").addEventListener("click", function (e) {
