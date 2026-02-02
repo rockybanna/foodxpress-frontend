@@ -6,166 +6,225 @@
   <title>Restaurant Dashboard — FoodXpress</title>
   <link rel="stylesheet" href="../../assets/css/base.css" />
   <style>
-    header {
-      border-bottom: 1px solid #ddd;
-      margin-bottom: 16px;
-    }
-    nav a {
-      margin-right: 12px;
-      cursor: pointer;
-    }
-    .section {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 16px;
-    }
-    .muted {
-      color: #777;
-      font-size: 13px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 6px 8px;
-      font-size: 13px;
-      text-align: left;
-    }
-    th {
-      background: #f5f5f5;
-    }
+    header { border-bottom: 1px solid #ddd; margin-bottom: 16px; }
+    nav a { margin-right: 12px; cursor: pointer; }
+    .section { border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-bottom: 16px; }
+    .muted { color: #777; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 13px; text-align: left; }
+    th { background: #f5f5f5; }
+    .clickable { color: #0b5ed7; text-decoration: underline; cursor: pointer; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:10px; background:#eee; font-size:12px; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h2>FoodXpress — Restaurant Dashboard</h2>
-    <p>
-      Logged in as: <strong id="restaurantUser"></strong>
-      |
-      <a href="#" id="logoutLink">Logout</a>
+<header>
+  <h2>FoodXpress — Restaurant Dashboard</h2>
+  <p>
+    Logged in as: <strong id="restaurantUser"></strong>
+    |
+    <a href="#" id="logoutLink">Logout</a>
+  </p>
+</header>
+
+<nav>
+  <a onclick="showSection('overview')">Overview</a>
+  <a onclick="showSection('orders')">Orders</a>
+  <a onclick="showSection('menu')">Menu</a>
+  <a onclick="showSection('timings')">Timings</a>
+</nav>
+
+<main>
+  <!-- Overview -->
+  <section id="overview" class="section">
+    <h3>Overview</h3>
+    <p class="muted">Restaurant overview metrics will appear here.</p>
+  </section>
+
+  <!-- Orders List -->
+  <section id="orders" class="section" style="display:none;">
+    <h3>Orders (Read-only)</h3>
+    <p class="muted">Click an order to view details.</p>
+
+    <div id="ordersEmpty" class="muted">No orders found.</div>
+
+    <table id="ordersTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Status</th>
+          <th>Subtotal</th>
+          <th>Prep Time</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody id="ordersBody"></tbody>
+    </table>
+  </section>
+
+  <!-- Order Details -->
+  <section id="orderDetails" class="section" style="display:none;">
+    <h3>Order Details</h3>
+
+    <div class="grid">
+      <div><strong>Order ID:</strong> <span id="d_orderId"></span></div>
+      <div><strong>Status:</strong> <span id="d_status" class="pill"></span></div>
+      <div><strong>Created At:</strong> <span id="d_createdAt"></span></div>
+      <div><strong>Prep Time:</strong> <span id="d_prepTime"></span></div>
+    </div>
+
+    <h4 style="margin-top:12px;">Items</h4>
+    <div id="itemsEmpty" class="muted">No items data.</div>
+    <table id="itemsTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="itemsBody"></tbody>
+    </table>
+
+    <h4 style="margin-top:12px;">Totals</h4>
+    <div class="grid">
+      <div>Subtotal: <strong id="t_subtotal"></strong></div>
+      <div>Food GST: <strong id="t_foodGst"></strong></div>
+      <div>Delivery GST: <strong id="t_deliveryGst"></strong></div>
+      <div>Delivery Charge: <strong id="t_delivery"></strong></div>
+      <div>Total: <strong id="t_total"></strong></div>
+    </div>
+
+    <p style="margin-top:12px;">
+      <a class="clickable" onclick="backToOrders()">← Back to Orders</a>
     </p>
-  </header>
+  </section>
 
-  <nav>
-    <a onclick="showSection('overview')">Overview</a>
-    <a onclick="showSection('orders')">Orders</a>
-    <a onclick="showSection('menu')">Menu</a>
-    <a onclick="showSection('timings')">Timings</a>
-  </nav>
+  <!-- Menu -->
+  <section id="menu" class="section" style="display:none;">
+    <h3>Menu</h3>
+    <p class="muted">Menu management will be added later.</p>
+  </section>
 
-  <main>
-    <!-- Overview -->
-    <section id="overview" class="section">
-      <h3>Overview</h3>
-      <p class="muted">Restaurant overview metrics will appear here.</p>
-    </section>
+  <!-- Timings -->
+  <section id="timings" class="section" style="display:none;">
+    <h3>Timings</h3>
+    <p class="muted">Restaurant timings management will be added later.</p>
+  </section>
+</main>
 
-    <!-- Orders -->
-    <section id="orders" class="section" style="display:none;">
-      <h3>Orders (Read-only)</h3>
-      <p class="muted">Showing recent orders for this restaurant.</p>
+<script src="../../config.js"></script>
+<script src="../../core/state.js"></script>
+<script src="../../core/api.js"></script>
 
-      <div id="ordersEmpty" class="muted">No orders found.</div>
+<script>
+  const state = AppState.get();
+  if (!state.token || state.role !== "RESTAURANT") {
+    window.location.href = "./index.html";
+  }
+  document.getElementById("restaurantUser").textContent = state.userId;
 
-      <table id="ordersTable" style="display:none;">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Status</th>
-            <th>Subtotal</th>
-            <th>Prep Time</th>
-            <th>Created At</th>
-          </tr>
-        </thead>
-        <tbody id="ordersBody"></tbody>
-      </table>
-    </section>
+  function showSection(id) {
+    ["overview","orders","orderDetails","menu","timings"].forEach(s => {
+      document.getElementById(s).style.display = (s === id) ? "block" : "none";
+    });
+    if (id === "orders") loadOrders();
+  }
 
-    <!-- Menu -->
-    <section id="menu" class="section" style="display:none;">
-      <h3>Menu</h3>
-      <p class="muted">Menu management will be added later.</p>
-    </section>
+  function backToOrders() {
+    showSection("orders");
+  }
 
-    <!-- Timings -->
-    <section id="timings" class="section" style="display:none;">
-      <h3>Timings</h3>
-      <p class="muted">Restaurant timings management will be added later.</p>
-    </section>
-  </main>
+  async function loadOrders() {
+    const tbody = document.getElementById("ordersBody");
+    const table = document.getElementById("ordersTable");
+    const empty = document.getElementById("ordersEmpty");
 
-  <!-- Core scripts -->
-  <script src="../../config.js"></script>
-  <script src="../../core/state.js"></script>
-  <script src="../../core/api.js"></script>
+    tbody.innerHTML = "";
+    table.style.display = "none";
+    empty.style.display = "block";
 
-  <script>
-    const state = AppState.get();
+    try {
+      const res = await apiGet("getRestaurantOrders", { restaurantId: state.userId });
+      if (!res || !res.length) return;
 
-    // HARD GUARD (stable)
-    if (!state.token || state.role !== "RESTAURANT") {
-      window.location.href = "./index.html";
-    }
-
-    document.getElementById("restaurantUser").textContent = state.userId;
-
-    function showSection(id) {
-      ["overview", "orders", "menu", "timings"].forEach(s => {
-        document.getElementById(s).style.display = (s === id) ? "block" : "none";
+      res.forEach(o => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="clickable">${o.orderId || ""}</td>
+          <td>${o.status || ""}</td>
+          <td>${o.subtotal || ""}</td>
+          <td>${o.prepTime || ""}</td>
+          <td>${o.createdAt || ""}</td>
+        `;
+        tr.querySelector(".clickable").onclick = () => openOrder(o.orderId);
+        tbody.appendChild(tr);
       });
 
-      if (id === "orders") {
-        loadOrders();
-      }
+      empty.style.display = "none";
+      table.style.display = "table";
+    } catch (e) {
+      console.warn("Orders load failed:", e.message);
     }
+  }
 
-    async function loadOrders() {
-      const tbody = document.getElementById("ordersBody");
-      const table = document.getElementById("ordersTable");
-      const empty = document.getElementById("ordersEmpty");
+  async function openOrder(orderId) {
+    showSection("orderDetails");
 
-      tbody.innerHTML = "";
-      table.style.display = "none";
-      empty.style.display = "block";
+    // reset
+    document.getElementById("itemsBody").innerHTML = "";
+    document.getElementById("itemsTable").style.display = "none";
+    document.getElementById("itemsEmpty").style.display = "block";
 
-      try {
-        const res = await apiGet("getRestaurantOrders", {
-          restaurantId: state.userId
-        });
+    try {
+      // Use existing backend read-only helper if present; otherwise fallback to list data
+      const o = await apiGet("getRestaurantOrderDetails", { orderId });
 
-        if (!res || !res.length) return;
+      // Header
+      document.getElementById("d_orderId").textContent = o.orderId || "";
+      document.getElementById("d_status").textContent = o.status || "";
+      document.getElementById("d_createdAt").textContent = o.createdAt || "";
+      document.getElementById("d_prepTime").textContent = o.prepTime || "";
 
-        res.forEach(o => {
+      // Totals
+      document.getElementById("t_subtotal").textContent = o.subtotal || "";
+      document.getElementById("t_foodGst").textContent = o.foodGST || "";
+      document.getElementById("t_deliveryGst").textContent = o.deliveryGST || "";
+      document.getElementById("t_delivery").textContent = o.deliveryCharge || "";
+      document.getElementById("t_total").textContent = o.totalAmount || "";
+
+      // Items (safe)
+      const items = o.items || [];
+      if (items.length) {
+        const tbody = document.getElementById("itemsBody");
+        items.forEach(it => {
           const tr = document.createElement("tr");
+          const details = [];
+          if (it.variant) details.push(`Variant: ${it.variant}`);
+          if (it.addons) details.push(`Add-ons: ${it.addons}`);
           tr.innerHTML = `
-            <td>${o.orderId || ""}</td>
-            <td>${o.status || ""}</td>
-            <td>${o.subtotal || ""}</td>
-            <td>${o.prepTime || ""}</td>
-            <td>${o.createdAt || ""}</td>
+            <td>${it.name || it.itemId || ""}</td>
+            <td>${it.qty || ""}</td>
+            <td>${details.join(" | ")}</td>
           `;
           tbody.appendChild(tr);
         });
-
-        empty.style.display = "none";
-        table.style.display = "table";
-
-      } catch (e) {
-        console.warn("Orders load failed:", e.message);
+        document.getElementById("itemsEmpty").style.display = "none";
+        document.getElementById("itemsTable").style.display = "table";
       }
+    } catch (e) {
+      console.warn("Order details load failed:", e.message);
     }
+  }
 
-    document.getElementById("logoutLink").addEventListener("click", function (e) {
-      e.preventDefault();
-      AppState.clear();
-      window.location.href = "./index.html";
-    });
-  </script>
+  document.getElementById("logoutLink").addEventListener("click", e => {
+    e.preventDefault();
+    AppState.clear();
+    window.location.href = "./index.html";
+  });
+</script>
 
 </body>
 </html>
