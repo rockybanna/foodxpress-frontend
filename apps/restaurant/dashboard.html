@@ -147,7 +147,9 @@
     empty.style.display = "block";
 
     try {
-      const res = await apiGet("getRestaurantOrders", { restaurantId: state.userId });
+const res = await apiGet("getRestaurantOrders", {
+  token: state.token
+});
       if (!res || !res.length) return;
 
       res.forEach(o => {
