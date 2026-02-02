@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Restaurant Dashboard — FoodXpress</title>
+  <link rel="stylesheet" href="../../assets/css/base.css" />
+</head>
+<body>
+
+  <h2>Restaurant Dashboard</h2>
+
+  <p>
+    Logged in as:
+    <strong id="restaurantUser"></strong>
+  </p>
+
+  <p>This dashboard will be built in the next steps.</p>
+
+  <a href="#" id="logout">Logout</a>
+
+  <!-- Core scripts -->
+  <script src="../../config.js"></script>
+  <script src="../../core/state.js"></script>
+  <script src="../../core/auth.js"></script>
+
+  <script>
+    const state = AppState.get();
+
+    if (!state.token || state.role !== "RESTAURANT") {
+      window.location.href = "./index.html";
+    } else {
+      document.getElementById("restaurantUser").textContent = state.userId;
+    }
+
+    document.getElementById("logout").addEventListener("click", function (e) {
+      e.preventDefault();
+      AppState.clear();
+      window.location.href = "./index.html";
+    });
+  </script>
+
+</body>
+</html>
