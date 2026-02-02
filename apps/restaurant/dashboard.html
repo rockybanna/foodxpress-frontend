@@ -12,6 +12,7 @@
     }
     nav a {
       margin-right: 12px;
+      cursor: pointer;
     }
     .section {
       border: 1px solid #ddd;
@@ -22,6 +23,20 @@
     .muted {
       color: #777;
       font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      font-size: 13px;
+      text-align: left;
+    }
+    th {
+      background: #f5f5f5;
     }
   </style>
 </head>
@@ -37,47 +52,112 @@
   </header>
 
   <nav>
-    <a href="#">Overview</a>
-    <a href="#">Orders</a>
-    <a href="#">Menu</a>
-    <a href="#">Timings</a>
+    <a onclick="showSection('overview')">Overview</a>
+    <a onclick="showSection('orders')">Orders</a>
+    <a onclick="showSection('menu')">Menu</a>
+    <a onclick="showSection('timings')">Timings</a>
   </nav>
 
   <main>
-    <section class="section">
+    <!-- Overview -->
+    <section id="overview" class="section">
       <h3>Overview</h3>
-      <p class="muted">
-        Restaurant overview metrics will appear here.
-      </p>
+      <p class="muted">Restaurant overview metrics will appear here.</p>
     </section>
 
-    <section class="section">
-      <h3>Orders</h3>
-      <p class="muted">
-        Live and past orders will appear here.
-      </p>
+    <!-- Orders -->
+    <section id="orders" class="section" style="display:none;">
+      <h3>Orders (Read-only)</h3>
+      <p class="muted">Showing recent orders for this restaurant.</p>
+
+      <div id="ordersEmpty" class="muted">No orders found.</div>
+
+      <table id="ordersTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Status</th>
+            <th>Subtotal</th>
+            <th>Prep Time</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
     </section>
 
-    <section class="section">
+    <!-- Menu -->
+    <section id="menu" class="section" style="display:none;">
       <h3>Menu</h3>
-      <p class="muted">
-        Menu management will be added later.
-      </p>
+      <p class="muted">Menu management will be added later.</p>
+    </section>
+
+    <!-- Timings -->
+    <section id="timings" class="section" style="display:none;">
+      <h3>Timings</h3>
+      <p class="muted">Restaurant timings management will be added later.</p>
     </section>
   </main>
 
   <!-- Core scripts -->
   <script src="../../config.js"></script>
   <script src="../../core/state.js"></script>
+  <script src="../../core/api.js"></script>
 
   <script>
     const state = AppState.get();
 
-    // SIMPLE, STABLE GUARD (NO VERIFY YET)
+    // HARD GUARD (stable)
     if (!state.token || state.role !== "RESTAURANT") {
       window.location.href = "./index.html";
-    } else {
-      document.getElementById("restaurantUser").textContent = state.userId;
+    }
+
+    document.getElementById("restaurantUser").textContent = state.userId;
+
+    function showSection(id) {
+      ["overview", "orders", "menu", "timings"].forEach(s => {
+        document.getElementById(s).style.display = (s === id) ? "block" : "none";
+      });
+
+      if (id === "orders") {
+        loadOrders();
+      }
+    }
+
+    async function loadOrders() {
+      const tbody = document.getElementById("ordersBody");
+      const table = document.getElementById("ordersTable");
+      const empty = document.getElementById("ordersEmpty");
+
+      tbody.innerHTML = "";
+      table.style.display = "none";
+      empty.style.display = "block";
+
+      try {
+        const res = await apiGet("getRestaurantOrders", {
+          restaurantId: state.userId
+        });
+
+        if (!res || !res.length) return;
+
+        res.forEach(o => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${o.orderId || ""}</td>
+            <td>${o.status || ""}</td>
+            <td>${o.subtotal || ""}</td>
+            <td>${o.prepTime || ""}</td>
+            <td>${o.createdAt || ""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        empty.style.display = "none";
+        table.style.display = "table";
+
+      } catch (e) {
+        console.warn("Orders load failed:", e.message);
+      }
     }
 
     document.getElementById("logoutLink").addEventListener("click", function (e) {
