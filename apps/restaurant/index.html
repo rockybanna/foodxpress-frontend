@@ -45,19 +45,18 @@
       const password = document.getElementById("password").value;
 
       try {
-        const res = await apiGet("restaurantLogin", {
+        const res = await apiGet("login", {
+          role: "RESTAURANT",
           id,
           password
         });
 
-        // Save session
         AppState.set({
           token: res.token,
           role: "RESTAURANT",
           userId: res.id
         });
 
-        // Go to dashboard (next step placeholder)
         window.location.href = "./dashboard.html";
 
       } catch (err) {
