@@ -1,60 +1,39 @@
-// ===============================
-// FOODXPRESS — GLOBAL STATE
-// ===============================
-// In-memory + persisted auth state (read-only)
+/**
+ * ===============================
+ * FOODXPRESS — APP STATE
+ * ===============================
+ * Single source of truth for session
+ */
 
-(function () {
-  const STORAGE_KEY = "foodxpress_auth";
+const STORAGE_KEY = "FOODXPRESS_STATE";
 
-  const state = {
-    token: null,
-    role: null,
-    userId: null
-  };
-
-  function load() {
+const AppState = {
+  get() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const saved = JSON.parse(raw);
-      state.token = saved.token || null;
-      state.role = saved.role || null;
-      state.userId = saved.userId || null;
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+        token: null,
+        role: null,
+        userId: null
+      };
     } catch (e) {
-      clear();
+      return {
+        token: null,
+        role: null,
+        userId: null
+      };
     }
-  }
+  },
 
-  function save() {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        token: state.token,
-        role: state.role,
-        userId: state.userId
-      })
-    );
-  }
+  set(state) {
+    const safeState = {
+      token: state.token || null,
+      role: state.role || null,
+      userId: state.userId || null
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeState));
+  },
 
-  function clear() {
-    state.token = null;
-    state.role = null;
-    state.userId = null;
+  clear() {
     localStorage.removeItem(STORAGE_KEY);
   }
-
-  function setSession({ token, role, userId }) {
-    state.token = token;
-    state.role = role;
-    state.userId = userId;
-    save();
-  }
-
-  load();
-
-  window.AppState = {
-    get: () => ({ ...state }),
-    setSession,
-    clear
-  };
-})();
+};
