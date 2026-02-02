@@ -1,8 +1,70 @@
 <!DOCTYPE html>
-<html>
-<head><title>Restaurant App</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Restaurant Login — FoodXpress</title>
+  <link rel="stylesheet" href="../../assets/css/base.css" />
+</head>
 <body>
-<h2>Restaurant App</h2>
+
+  <h2>Restaurant Login</h2>
+
+  <form id="loginForm">
+    <label>
+      Restaurant ID<br />
+      <input type="text" id="restaurantId" required />
+    </label>
+    <br /><br />
+
+    <label>
+      Password<br />
+      <input type="password" id="password" required />
+    </label>
+    <br /><br />
+
+    <button type="submit">Login</button>
+  </form>
+
+  <p id="error" style="color:red;"></p>
+
+  <!-- Core scripts -->
+  <script src="../../config.js"></script>
+  <script src="../../core/state.js"></script>
+  <script src="../../core/api.js"></script>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const errorEl = document.getElementById("error");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      errorEl.textContent = "";
+
+      const id = document.getElementById("restaurantId").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await apiGet("restaurantLogin", {
+          id,
+          password
+        });
+
+        // Save session
+        AppState.set({
+          token: res.token,
+          role: "RESTAURANT",
+          userId: res.id
+        });
+
+        // Go to dashboard (next step placeholder)
+        window.location.href = "./dashboard.html";
+
+      } catch (err) {
+        errorEl.textContent = err.message || "Login failed";
+      }
+    });
+  </script>
+
 </body>
 </html>
-
