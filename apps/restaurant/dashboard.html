@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Restaurant Dashboard — FoodXpress</title>
+  <title>FoodXpress — Restaurant Dashboard</title>
   <link rel="stylesheet" href="../../assets/css/base.css" />
   <style>
     header { border-bottom: 1px solid #ddd; margin-bottom: 16px; }
@@ -37,13 +37,12 @@
 </nav>
 
 <main>
-  <!-- Overview -->
+
   <section id="overview" class="section">
     <h3>Overview</h3>
     <p class="muted">Restaurant overview metrics will appear here.</p>
   </section>
 
-  <!-- Orders List -->
   <section id="orders" class="section" style="display:none;">
     <h3>Orders (Read-only)</h3>
     <p class="muted">Click an order to view details.</p>
@@ -64,7 +63,6 @@
     </table>
   </section>
 
-  <!-- Order Details -->
   <section id="orderDetails" class="section" style="display:none;">
     <h3>Order Details</h3>
 
@@ -75,19 +73,6 @@
       <div><strong>Prep Time:</strong> <span id="d_prepTime"></span></div>
     </div>
 
-    <h4 style="margin-top:12px;">Items</h4>
-    <div id="itemsEmpty" class="muted">No items data.</div>
-    <table id="itemsTable" style="display:none;">
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Details</th>
-        </tr>
-      </thead>
-      <tbody id="itemsBody"></tbody>
-    </table>
-
     <h4 style="margin-top:12px;">Totals</h4>
     <div class="grid">
       <div>Subtotal: <strong id="t_subtotal"></strong></div>
@@ -97,22 +82,32 @@
       <div>Total: <strong id="t_total"></strong></div>
     </div>
 
+    <!-- ACCEPT / REJECT — CONFIRMED ONLY -->
+    <div id="acceptBox" style="margin-top:12px; display:none;">
+      <label>
+        Prep Time (minutes):
+        <input type="number" id="prepInput" min="10" step="5">
+      </label>
+      <br><br>
+      <button onclick="acceptOrder()">Accept</button>
+      <button onclick="rejectOrder()">Reject</button>
+    </div>
+
     <p style="margin-top:12px;">
-      <a class="clickable" onclick="backToOrders()">← Back to Orders</a>
+      <a class="clickable" onclick="showSection('orders')">← Back to Orders</a>
     </p>
   </section>
 
-  <!-- Menu -->
   <section id="menu" class="section" style="display:none;">
     <h3>Menu</h3>
     <p class="muted">Menu management will be added later.</p>
   </section>
 
-  <!-- Timings -->
   <section id="timings" class="section" style="display:none;">
     <h3>Timings</h3>
     <p class="muted">Restaurant timings management will be added later.</p>
   </section>
+
 </main>
 
 <script src="../../config.js"></script>
@@ -133,10 +128,6 @@
     if (id === "orders") loadOrders();
   }
 
-  function backToOrders() {
-    showSection("orders");
-  }
-
   async function loadOrders() {
     const tbody = document.getElementById("ordersBody");
     const table = document.getElementById("ordersTable");
@@ -147,19 +138,17 @@
     empty.style.display = "block";
 
     try {
-const res = await apiGet("getRestaurantOrders", {
-  token: state.token
-});
+      const res = await apiGet("getRestaurantOrders", { token: state.token });
       if (!res || !res.length) return;
 
       res.forEach(o => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="clickable">${o.orderId || ""}</td>
-          <td>${o.status || ""}</td>
+          <td class="clickable">${o.orderId}</td>
+          <td>${o.status}</td>
           <td>${o.subtotal || ""}</td>
           <td>${o.prepTime || ""}</td>
-          <td>${o.createdAt || ""}</td>
+          <td>${o.createdAt}</td>
         `;
         tr.querySelector(".clickable").onclick = () => openOrder(o.orderId);
         tbody.appendChild(tr);
@@ -168,64 +157,66 @@ const res = await apiGet("getRestaurantOrders", {
       empty.style.display = "none";
       table.style.display = "table";
     } catch (e) {
-      console.warn("Orders load failed:", e.message);
+      console.warn(e.message);
     }
   }
 
   async function openOrder(orderId) {
     showSection("orderDetails");
+    const o = await apiGet("getRestaurantOrderDetails", { orderId });
 
-    // reset
-    document.getElementById("itemsBody").innerHTML = "";
-    document.getElementById("itemsTable").style.display = "none";
-    document.getElementById("itemsEmpty").style.display = "block";
+    document.getElementById("d_orderId").textContent = o.orderId;
+    document.getElementById("d_status").textContent = o.status;
+    document.getElementById("d_createdAt").textContent = o.createdAt;
+    document.getElementById("d_prepTime").textContent = o.prepTime || "";
 
-    try {
-      // Use existing backend read-only helper if present; otherwise fallback to list data
-      const o = await apiGet("getRestaurantOrderDetails", { orderId });
+    document.getElementById("t_subtotal").textContent = o.subtotal || "";
+    document.getElementById("t_foodGst").textContent = o.foodGST || "";
+    document.getElementById("t_deliveryGst").textContent = o.deliveryGST || "";
+    document.getElementById("t_delivery").textContent = o.deliveryCharge || "";
+    document.getElementById("t_total").textContent = o.totalAmount || "";
 
-      // Header
-      document.getElementById("d_orderId").textContent = o.orderId || "";
-      document.getElementById("d_status").textContent = o.status || "";
-      document.getElementById("d_createdAt").textContent = o.createdAt || "";
-      document.getElementById("d_prepTime").textContent = o.prepTime || "";
-
-      // Totals
-      document.getElementById("t_subtotal").textContent = o.subtotal || "";
-      document.getElementById("t_foodGst").textContent = o.foodGST || "";
-      document.getElementById("t_deliveryGst").textContent = o.deliveryGST || "";
-      document.getElementById("t_delivery").textContent = o.deliveryCharge || "";
-      document.getElementById("t_total").textContent = o.totalAmount || "";
-
-      // Items (safe)
-      const items = o.items || [];
-      if (items.length) {
-        const tbody = document.getElementById("itemsBody");
-        items.forEach(it => {
-          const tr = document.createElement("tr");
-          const details = [];
-          if (it.variant) details.push(`Variant: ${it.variant}`);
-          if (it.addons) details.push(`Add-ons: ${it.addons}`);
-          tr.innerHTML = `
-            <td>${it.name || it.itemId || ""}</td>
-            <td>${it.qty || ""}</td>
-            <td>${details.join(" | ")}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-        document.getElementById("itemsEmpty").style.display = "none";
-        document.getElementById("itemsTable").style.display = "table";
-      }
-    } catch (e) {
-      console.warn("Order details load failed:", e.message);
+    const box = document.getElementById("acceptBox");
+    if (o.status === "CONFIRMED") {
+      box.style.display = "block";
+      window.__currentOrderId = o.orderId;
+    } else {
+      box.style.display = "none";
     }
   }
 
-  document.getElementById("logoutLink").addEventListener("click", e => {
-    e.preventDefault();
+  async function acceptOrder() {
+    const prepTime = document.getElementById("prepInput").value;
+    if (!prepTime) return alert("Enter prep time");
+
+    await apiGet("restaurantAcceptOrder", {
+      token: state.token,
+      orderId: window.__currentOrderId,
+      prepTime
+    });
+
+    alert("Order accepted");
+    showSection("orders");
+  }
+
+  async function rejectOrder() {
+    const reason = prompt("Reason for rejection?");
+    if (!reason) return;
+
+    await apiGet("restaurantRejectOrder", {
+      token: state.token,
+      orderId: window.__currentOrderId,
+      reason
+    });
+
+    alert("Order rejected");
+    showSection("orders");
+  }
+
+  document.getElementById("logoutLink").onclick = () => {
     AppState.clear();
     window.location.href = "./index.html";
-  });
+  };
 </script>
 
 </body>
